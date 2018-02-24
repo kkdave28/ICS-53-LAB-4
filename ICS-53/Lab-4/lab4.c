@@ -178,9 +178,9 @@ static void allocate(unsigned int blocksz)
     // hopefully *_*
     unsigned int realsz = blocksz +2; // for the header;
     unsigned int bsz = 0;
-    if(realsz > MAXALLOCATABLEBLOCK)
+    if(realsz > MAXBLOCKSZ)
     {
-        printf("Cannot allocate more than %i blocks in a single allocation\n", MAXALLOCATABLEBLOCK);
+        printf("Cannot allocate more than %i blocks in a single allocation\n", MAXBLOCKSZ);
         return;
     }
     unsigned char * newblk = find_free_block(realsz);
@@ -193,6 +193,11 @@ static void allocate(unsigned int blocksz)
     ;
     if(get_blocksz(newblk[1])-realsz <3)
     {
+        // if(newblk[0] == 0)
+        // {
+        //     newblk[0] = ++blocknumber;
+        // }
+        newblk[0] = ++blocknumber;
         printf("%i\n", newblk[0]);
         set_size(&newblk[1], get_blocksz(newblk[1]));
         set_allocated_bit(&newblk[1]);
@@ -227,10 +232,17 @@ static void print_blocklist()
 {
     unsigned char * temp = start;
     unsigned char st = 0;
-    printf("BLOCKNUM     SIZE        ALLOCATED       START       END\n");
+    printf("SIZE        ALLOCATED       START       END\n");
     while(temp < end)
     {
-    printf("%i          %i            %i             %i          %i\n",temp[0], get_blocksz(temp[1]), get_allocation_bit(temp[1]),st, st+get_blocksz(temp[1]) -1);
+    if(get_allocation_bit(temp[1]))
+    {
+    printf(" %3i           %3s           %3i         %3i\n", get_blocksz(temp[1]), "yes",st, st+get_blocksz(temp[1]) -1);
+    }
+    else
+    {
+    printf(" %3i           %3s           %3i         %3i\n", get_blocksz(temp[1]), "no",st, st+get_blocksz(temp[1]) -1);
+    }
     st = st+ get_blocksz(temp[1]);
     temp+=get_blocksz(temp[1]);
     }
@@ -292,8 +304,7 @@ static void print_header(unsigned char blocknum)
         printf("Block not found, try again\n");
         return;
     }
-    printf("%02x%x\n", temp[0], temp[1]);
-    printf("Printing the header of block number %i\n", blocknum);
+    printf("%02x%02x\n", temp[0], temp[1]);
 }
 static int read_command(char * s)
 {
