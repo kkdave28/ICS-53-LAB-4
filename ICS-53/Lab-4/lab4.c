@@ -227,27 +227,72 @@ static void print_blocklist()
 {
     unsigned char * temp = start;
     unsigned char st = 0;
-    int c = 5;
     printf("BLOCKNUM     SIZE        ALLOCATED       START       END\n");
     while(temp < end)
     {
     printf("%i          %i            %i             %i          %i\n",temp[0], get_blocksz(temp[1]), get_allocation_bit(temp[1]),st, st+get_blocksz(temp[1]) -1);
     st = st+ get_blocksz(temp[1]);
-    //printf("ST = %i\n", st);
     temp+=get_blocksz(temp[1]);
-    c--;
     }
 }
-static void write_heap(unsigned int blocknum, char c, unsigned int copies)
+static void write_heap(unsigned char blocknum, char c, unsigned char copies)
 {
-    printf("Writing %i copies of %c to block number %i\n", copies, c, blocknum);
+    unsigned char * temp = findblock(blocknum);
+
+    if(temp == NULL)
+    {
+        printf("Block not found, try again\n");
+        return;
+    }
+    if(copies > (get_blocksz(temp[1])-2))
+    {
+        printf("Not enough space to print\n");
+        return;
+    }
+    if(!get_allocation_bit(temp[1]))
+    {
+        printf("Block not valid/allocated\n");
+    }
+    temp+=2;
+    int i;
+    for(i=0; i<copies; i++)
+    {
+        temp[i] = c;
+    }
+
+    //printf("Writing %i copies of %c to block number %i\n", copies, c, blocknum);
 }
-static void print_heap(unsigned int blocknum, unsigned int sz)
+static void print_heap(unsigned char blocknum, unsigned char sz)
 {
-    printf("Printing %i bytes of block number %i\n", sz, blocknum);
+    unsigned char * temp = findblock(blocknum);
+
+    if(temp == NULL)
+    {
+        printf("Block not found, try again\n");
+        return;
+    }
+    if(!get_allocation_bit(temp[1]))
+    {
+        printf("Block not valid/allocated\n");
+    }
+    temp+=2;
+    int i;
+    for(i=0; i<sz; i++)
+    {
+        printf("%c",temp[i]);
+    }
+    printf("\n");
 }
-static void print_header(unsigned int blocknum)
+static void print_header(unsigned char blocknum)
 {
+       unsigned char * temp = findblock(blocknum);
+
+    if(temp == NULL)
+    {
+        printf("Block not found, try again\n");
+        return;
+    }
+    printf("%02x%x\n", temp[0], temp[1]);
     printf("Printing the header of block number %i\n", blocknum);
 }
 static int read_command(char * s)
