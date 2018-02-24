@@ -15,7 +15,6 @@
 #define MAXALLOCATABLEBLOCK 125
 
 static unsigned char blocknumber = 0;
-static unsigned int total = 0;
 static unsigned char * MainHeap = NULL;
 static unsigned char* start = NULL;
 static unsigned char * end = NULL;
@@ -55,32 +54,11 @@ static void init_heap()
 {
     MainHeap = (unsigned char*)malloc(MAXBLOCKSZ);
     start = MainHeap;
-    end = MainHeap + MAXBLOCKSZ; // weird  ¯\_(ツ)_/¯
+    end = MainHeap + MAXBLOCKSZ;
 
     MainHeap[0] = blocknumber;
     MainHeap[1] = MAXBLOCKSZ;
     MainHeap[1] = MainHeap[1] << 1;
-    // int i;
-    // for(i=0; i< MAXBLOCKSZ; i++)
-    // {
-    //     MainHeap[i] = 'A';
-    // }
-    // *end = 'X';
-    // for(i=0; i< MAXBLOCKSZ; i++)
-    // {
-    //     printf("COntents of %i are %c\n", i, MainHeap[i]);
-    // }
-    //set_allocated_bit(&MainHeap[1]);
-    //  if(get_allocation_bit(MainHeap[1]))
-    //  {
-    //      printf("ALLOCATION BIT IS SET\n");
-    //  }
-    //  else
-    //  {
-    //      printf("ALLOCATION BIT IS NOT SET\n");
-    //  }
-  //   printf("BLOCKNUM = %i\n", MainHeap[0]);
-     //printf("BLOCKSZ = %i\n", get_blocksz(MainHeap[1]));
 }
 static void free_heap()
 {
@@ -169,14 +147,7 @@ static void set_size(char * lower_byte, unsigned int sz)
 }
 static void allocate(unsigned int blocksz)
 {
-    // find the free block of appropriate size;
-    // set top byte as blocknum
-    // set bottom byte as size +1 (+1 meaning allocated)
-    // split
-    // set next_free pointer to the next free block
-    // success.
-    // hopefully *_*
-    unsigned int realsz = blocksz +2; // for the header;
+    unsigned int realsz = blocksz +2;
     unsigned int bsz = 0;
     if(realsz > MAXBLOCKSZ)
     {
@@ -184,19 +155,15 @@ static void allocate(unsigned int blocksz)
         return;
     }
     unsigned char * newblk = find_free_block(realsz);
-    bsz = get_blocksz(newblk[1]);
     if(newblk == NULL)
     {
-        printf("No more space for you buddy.\n");
+        printf("No more space on heap available, MAX amount is already allocated.\n");
         return;
     }
-    ;
+    bsz = get_blocksz(newblk[1]);
     if(get_blocksz(newblk[1])-realsz <3)
     {
-        // if(newblk[0] == 0)
-        // {
-        //     newblk[0] = ++blocknumber;
-        // }
+        
         newblk[0] = ++blocknumber;
         printf("%i\n", newblk[0]);
         set_size(&newblk[1], get_blocksz(newblk[1]));
@@ -225,8 +192,6 @@ static void free_block(unsigned int blocknum)
         return;
     }
     remove_allocation_bit(&oldblk[1]);
-
-    //printf("Freeing block number %i\n", blocknum);
 }
 static void print_blocklist()
 {
@@ -272,7 +237,6 @@ static void write_heap(unsigned char blocknum, char c, unsigned char copies)
         temp[i] = c;
     }
 
-    //printf("Writing %i copies of %c to block number %i\n", copies, c, blocknum);
 }
 static void print_heap(unsigned char blocknum, unsigned char sz)
 {
