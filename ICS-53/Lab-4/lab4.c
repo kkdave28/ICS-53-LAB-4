@@ -252,6 +252,11 @@ static void print_heap(unsigned char blocknum, unsigned char sz)
         printf("Block not valid/allocated\n");
         return;
     }
+    if(sz> get_blocksz(temp[1]) -2)
+    {
+        printf("Printing out of bounds\n");
+        return;
+    }
     temp+=2;
     int i;
     for(i=0; i<sz; i++)
