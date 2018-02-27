@@ -42,7 +42,7 @@ static char * findblock(unsigned char blocknum)
     unsigned char * temp = start;
     while(temp < end)
     {
-        if(temp[0] == blocknum)
+        if(temp[0] == blocknum && get_allocation_bit(temp[1]))
         {
             return temp;
         }
