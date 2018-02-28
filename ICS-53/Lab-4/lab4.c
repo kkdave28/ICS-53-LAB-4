@@ -4,9 +4,12 @@
 #include <assert.h>
 #include <limits.h>
 
-#define SET_BIT(p,i) ((p) |=  (1 << (i)))
-#define CLR_BIT(p,i) ((p) &= ~(1 << (i)))
-#define GET_BIT(p,i) ((p) &   (1 << (i)))
+/*
+Macros for Setting, Getting and Clearing individual bits.
+*/
+#define SET_BIT(p,i) ((p) |=  (1 << (i))) // Enables the ith bit of p.
+#define CLR_BIT(p,i) ((p) &= ~(1 << (i))) // Disables the ith bit of p.
+#define GET_BIT(p,i) ((p) &   (1 << (i))) // Gets the ith bit of p.
 
 #define OK       0
 #define NO_INPUT 1
@@ -16,28 +19,28 @@
 
 static unsigned char blocknumber = 0;
 static unsigned char * MainHeap = NULL;
-static unsigned char* start = NULL;
+static unsigned char* start = NULL; // Redundant
 static unsigned char * end = NULL;
 
-static unsigned char get_blocksz(char s)
+static unsigned char get_blocksz(char s) // Get the blocksize of the block.
 {
     unsigned char temp = s;
     temp = temp >> 1;
     return temp;
 } 
-static void set_allocated_bit(unsigned char * lower_byte)
+static void set_allocated_bit(unsigned char * lower_byte) // Set the allocation bit pointed by the pointer.
 {
     SET_BIT(*lower_byte, 0);
 }
-static void remove_allocation_bit(unsigned char * lower_byte)
+static void remove_allocation_bit(unsigned char * lower_byte) // Clear the allocation bit  pointed by the pointer.
 {
     CLR_BIT(*lower_byte, 0);
 }
-static char get_allocation_bit (unsigned char lower_byte)
+static char get_allocation_bit (unsigned char lower_byte)// get allocationa bit for lower_byte
 {
     return GET_BIT(lower_byte, 0);
 }
-static char * findblock(unsigned char blocknum)
+static char * findblock(unsigned char blocknum) // Searches for the block pointed by the blocknum.
 {
     unsigned char * temp = start;
     while(temp < end)
@@ -50,7 +53,7 @@ static char * findblock(unsigned char blocknum)
     }
     return NULL;
 }
-static void init_heap()
+static void init_heap() // Initializes heap using malloc and sets intitial size, allocation bit and block number.
 {
     MainHeap = (unsigned char*)malloc(MAXBLOCKSZ);
     start = MainHeap;
@@ -60,14 +63,15 @@ static void init_heap()
     MainHeap[1] = MAXBLOCKSZ;
     MainHeap[1] = MainHeap[1] << 1;
 }
-static void free_heap()
+static void free_heap() // Free heaps and sets pointers to null to prevent illicit use. Passed to atexit.
 {
     free(MainHeap);
     MainHeap = NULL;
     start = NULL;
     end = NULL;
 }
-static int customgetLine (char *buff, size_t sz) {
+static int customgetLine (char *buff, size_t sz) // custom getline function for reading commands from the terminal.
+{
     int ch, extra;
 
     printf("> ");
@@ -85,7 +89,7 @@ static int customgetLine (char *buff, size_t sz) {
     return OK;
 }
 
-static char** str_split(char* a_str, const char a_delim)
+static char** str_split(char* a_str, const char a_delim) // split function for string/command processing.
 {
     char** result = NULL;
     int count = 0;
@@ -126,7 +130,7 @@ static char** str_split(char* a_str, const char a_delim)
 
     return result;
 }
-static unsigned char * find_free_block(int reqsz)
+static unsigned char * find_free_block(int reqsz) // find free block starting from the very beginning of the heap.
 {
     unsigned char * temp = start;
     while(temp < end)
@@ -139,28 +143,28 @@ static unsigned char * find_free_block(int reqsz)
     }
     return NULL;
 }
-static void set_size(char * lower_byte, unsigned int sz)
+static void set_size(char * lower_byte, unsigned int sz) // set size sz in the lower byte.
 {
     *lower_byte = sz;
     *lower_byte = *lower_byte << 1;
 }
 static void allocate(unsigned int blocksz)
 {
-    unsigned int realsz = blocksz +2;
+    unsigned int realsz = blocksz +2; // Realsz is payload + 2 for header space.
     unsigned int bsz = 0;
-    if(realsz > MAXBLOCKSZ)
+    if(realsz > MAXBLOCKSZ) // checking if realsz exceeds 127, if so print an erroe.
     {
         printf("Cannot allocate more than %i blocks in a single allocation\n", MAXBLOCKSZ);
         return;
     }
-    unsigned char * newblk = find_free_block(realsz);
-    if(newblk == NULL)
+    unsigned char * newblk = find_free_block(realsz); // Find FIRST FREE BLOCK!.
+    if(newblk == NULL) // if all blocks are allocated or no block of suitable size is found
     {
         printf("No more space on heap available, MAX amount is already allocated.\n");
         return;
     }
-    bsz = get_blocksz(newblk[1]);
-    if(get_blocksz(newblk[1])-realsz <3)
+    bsz = get_blocksz(newblk[1]); // get the size of the current b;ock in case of splitting.
+    if(get_blocksz(newblk[1])-realsz <3) // If splitting is not required.
     {
         
         newblk[0] = ++blocknumber;
@@ -168,7 +172,7 @@ static void allocate(unsigned int blocksz)
         set_size(&newblk[1], get_blocksz(newblk[1]));
         set_allocated_bit(&newblk[1]);
     }
-    else
+    else // splitting is possible and required.
     {
         unsigned char oldblocknum = newblk[0];
         newblk[0] = ++blocknumber;
@@ -185,7 +189,7 @@ static void allocate(unsigned int blocksz)
 static void free_block(unsigned int blocknum)
 {
     unsigned char * oldblk = findblock(blocknum);
-    if(oldblk == NULL)
+    if(oldblk == NULL) //Block indicated by the blocknum is not found.
     {
         printf("Block not found. Try again.\n");
         return;
@@ -199,7 +203,7 @@ static void print_blocklist()
     printf("SIZE        ALLOCATED       START      END\n");
     while(temp < end)
     {
-    if(get_allocation_bit(temp[1]))
+    if(get_allocation_bit(temp[1]))//check allocation bit. 
     {
     printf("%-3i           %-3s           %-3i        %-3i\n", get_blocksz(temp[1]), "yes",st, st+get_blocksz(temp[1]) -1);
     }
@@ -215,19 +219,19 @@ static void write_heap(unsigned char blocknum, char c, unsigned char copies)
 {
     unsigned char * temp = findblock(blocknum);
 
-    if(temp == NULL)
+    if(temp == NULL) // block is not present
     {
         printf("Block not found, try again\n");
         return;
     }
-    if(copies > (get_blocksz(temp[1])-2))
-    {
-        printf("Not enough space to print\n");
-        return;
-    }
-    if(!get_allocation_bit(temp[1]))
+    if(!get_allocation_bit(temp[1])) // block not allocated
     {
         printf("Block not valid/allocated\n");
+        return;
+    }
+    if(copies > (get_blocksz(temp[1])-2)) // writesize exceeds payload
+    {
+        printf("Not enough space to print\n");
         return;
     }
     temp+=2;
@@ -242,21 +246,29 @@ static void print_heap(unsigned char blocknum, unsigned char sz)
 {
     unsigned char * temp = findblock(blocknum);
 
-    if(temp == NULL)
+    if(temp == NULL) // cannot find the block indicated by the blocknum.
     {
         printf("Block not found, try again\n");
         return;
     }
-    if(!get_allocation_bit(temp[1]))
+    if(!get_allocation_bit(temp[1])) // allocation bit is not set
     {
         printf("Block not valid/allocated\n");
         return;
     }
-    if(sz> get_blocksz(temp[1]) -2)
+    if(sz> get_blocksz(temp[1]) -2)// when size passed is greter than payload size.
     {
-        printf("Printing out of bounds\n");
+        int sz = get_blocksz(temp[1]) -2;
+        temp+=2;
+        int i;
+        for(i=0; i<sz; i++)
+        {
+            printf("%c",temp[i]);
+        }
+        printf("\n");
         return;
     }
+    //If size is valid(sz <= blocksize-2)
     temp+=2;
     int i;
     for(i=0; i<sz; i++)
@@ -269,7 +281,7 @@ static void print_header(unsigned char blocknum)
 {
     unsigned char * temp = findblock(blocknum);
 
-    if(temp == NULL)
+    if(temp == NULL) // block is not present.
     {
         printf("Block not found, try again\n");
         return;
