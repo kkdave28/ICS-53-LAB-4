@@ -5,7 +5,7 @@
 #include <limits.h>
 
 /*
-Macros for Setting, Getting and Clearing individual bits.
+    Macros for Setting, Getting and Clearing individual bits.
 */
 #define SET_BIT(p,i) ((p) |=  (1 << (i))) // Enables the ith bit of p.
 #define CLR_BIT(p,i) ((p) &= ~(1 << (i))) // Disables the ith bit of p.
@@ -88,7 +88,6 @@ static int customgetLine (char *buff, size_t sz) // custom getline function for 
     buff[strlen(buff)-1] = '\0';
     return OK;
 }
-
 static char** str_split(char* a_str, const char a_delim) // split function for string/command processing.
 {
     char** result = NULL;
@@ -148,7 +147,7 @@ static void set_size(char * lower_byte, unsigned int sz) // set size sz in the l
     *lower_byte = sz;
     *lower_byte = *lower_byte << 1;
 }
-static void allocate(unsigned int blocksz)
+static void allocate(unsigned int blocksz) // allocate a block of size blocksz.
 {
     unsigned int realsz = blocksz +2; // Realsz is payload + 2 for header space.
     unsigned int bsz = 0;
@@ -186,7 +185,7 @@ static void allocate(unsigned int blocksz)
     }
     
 }
-static void free_block(unsigned int blocknum)
+static void free_block(unsigned int blocknum) // free a block which has block number blocknum. 
 {
     unsigned char * oldblk = findblock(blocknum);
     if(oldblk == NULL) //Block indicated by the blocknum is not found.
@@ -196,7 +195,7 @@ static void free_block(unsigned int blocknum)
     }
     remove_allocation_bit(&oldblk[1]);
 }
-static void print_blocklist()
+static void print_blocklist() // print the entire blocklist.
 {
     unsigned char * temp = start;
     unsigned char st = 0;
@@ -215,7 +214,7 @@ static void print_blocklist()
     temp+=get_blocksz(temp[1]);
     }
 }
-static void write_heap(unsigned char blocknum, char c, unsigned char copies)
+static void write_heap(unsigned char blocknum, char c, unsigned char copies) // Write #copies of c to block pointed by blocknumber, 
 {
     unsigned char * temp = findblock(blocknum);
 
@@ -242,7 +241,7 @@ static void write_heap(unsigned char blocknum, char c, unsigned char copies)
     }
 
 }
-static void print_heap(unsigned char blocknum, unsigned char sz)
+static void print_heap(unsigned char blocknum, unsigned char sz) // prints the first sz bytes of block pointed by the blocknum
 {
     unsigned char * temp = findblock(blocknum);
 
@@ -288,7 +287,7 @@ static void print_header(unsigned char blocknum)
     }
     printf("%02x%02x\n", temp[0], temp[1]);
 }
-static int read_command(char * s)
+static int read_command(char * s) // processes the command for the shell.
 {
     // 1 - allocate
     // 2 - free
@@ -334,12 +333,12 @@ static int read_command(char * s)
     }
     else
     {
-
         return -1;
     }
 
 }
-static void cleanup(char ** s){
+static void cleanup(char ** s) // cleanup for shell.
+{
     
     int i;
     for(i = 0; *(s+i); i++)
@@ -349,7 +348,7 @@ static void cleanup(char ** s){
     free(s);
 }
 
-static void shell()
+static void shell() // main shell that runs the program.
 {
     char command[1024];
     char ** temp = NULL;
